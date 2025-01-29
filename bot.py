@@ -19,7 +19,7 @@ class TelegramForwardBot:
         self.app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))
 
     async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Responde ao comando /start.""" 
+        """Responde ao comando /start."""
         chat_id = update.message.chat_id
         self.chat_ids.add(chat_id)  # Adiciona o chat_id à lista
         await update.message.reply_text(
@@ -28,33 +28,26 @@ class TelegramForwardBot:
 
     def format_message(self, original_message: str) -> str:
         """
-        Formata a mensagem original para incluir os links desejados.
+        Formata a mensagem original para incluir os links dos times.
         
         Args:
             original_message: A mensagem original recebida pelo bot.
         
         Returns:
-            A mensagem formatada com os links.
+            A mensagem formatada com os links dos times.
         """
-        # Regex para encontrar os nomes dos times na mensagem
-        pattern = r"⚽️\s*([a-zA-Z\s\-]+)\s*\(H\)\s*x\s*([a-zA-Z\s\-]+)\s*\(A\)\s*\(ao vivo\)"
-        matches = re.findall(pattern, original_message)
+        # Usa regex para extrair os nomes dos times
+        matches = re.findall(r"⚽️ (.+?) \(H\) x (.+?) \(A\)", original_message)
         
-        # Para cada par de times encontrado, cria os links
-        formatted_message = original_message
-        for match in matches:
-            home_team, away_team = match
-            home_team = home_team.strip().replace(" ", "-").lower()
-            away_team = away_team.strip().replace(" ", "-").lower()
-
-            home_link = f"https://ropinweb.pinnacle888.com/en/compact/search/{home_team}"
-            away_link = f"https://ropinweb.pinnacle888.com/en/compact/search/{away_team}"
-            
-            # Substitui o texto do time original pelos links
-            formatted_message = formatted_message.replace(f"⚽️ {match[0]} (H) x {match[1]} (A) (ao vivo)", 
-                                                         f"🔗 {home_link}\n🔗 {away_link}")
+        # Constrói os links para cada time
+        links = []
+        for home_team, away_team in matches:
+            home_link = f"https://ropinweb.pinnacle888.com/en/compact/search/{home_team.replace(' ', '-')}"
+            away_link = f"https://ropinweb.pinnacle888.com/en/compact/search/{away_team.replace(' ', '-')}"
+            links.append(f"{home_link}\n{away_link}")
         
-        return formatted_message
+        # Retorna a mensagem original com os links adicionados
+        return f"{original_message}\n\n🔗 Links dos times:\n" + "\n".join(links)
 
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """
@@ -73,8 +66,7 @@ class TelegramForwardBot:
             try:
                 await context.bot.send_message(
                     chat_id=chat_id,
-                    text=formatted_message,
-                    parse_mode='HTML'  # Habilitar formatação HTML para os links
+                    text=formatted_message
                 )
             except Exception as e:
                 await update.message.reply_text(
