@@ -28,13 +28,13 @@ class TelegramForwardBot:
 
     def format_message(self, original_message: str) -> str:
         """
-        Formata a mensagem original para incluir os links dos times.
+        Formata a mensagem original para incluir os links desejados.
         
         Args:
             original_message: A mensagem original recebida pelo bot.
         
         Returns:
-            A mensagem formatada com os links dos times.
+            A mensagem formatada com os links.
         """
         # Usa regex para extrair os nomes dos times
         matches = re.findall(r"⚽️ (.+?) \(H\) x (.+?) \(A\)", original_message)
@@ -42,12 +42,12 @@ class TelegramForwardBot:
         # Constrói os links para cada time
         links = []
         for home_team, away_team in matches:
-            home_link = f"https://pinnacle888.com/en/compact/search/{home_team.replace(' ', '-')}"
-            away_link = f"https://pinnacle888.com/en/compact/search/{away_team.replace(' ', '-')}"
+            home_link = f"https://www.pinnacle888.com/m/en/asian/search#{home_team.replace(' ', '%20')}"
+            away_link = f"https://www.pinnacle888.com/m/en/asian/search#{away_team.replace(' ', '%20')}"
             links.append(f"{home_link}\n{away_link}")
         
         # Retorna a mensagem original com os links adicionados
-        return f"{original_message}\n\n🔗 Links dos times:\n" + "\n".join(links)
+        return f"{original_message}\n\n🔗 Links:\n" + "\n".join(links)
 
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """
