@@ -28,7 +28,7 @@ class TelegramForwardBot:
 
     def format_message(self, original_message: str) -> str:
         """
-        Formata a mensagem original para incluir o link desejado.
+        Formata a mensagem original para incluir os links desejados.
         
         Args:
             original_message: A mensagem original recebida pelo bot.
@@ -36,24 +36,25 @@ class TelegramForwardBot:
         Returns:
             A mensagem formatada com os links.
         """
-        # Regular expression para encontrar os nomes dos times
-        teams_pattern = re.compile(r"⚽️\s*(.*?)\s*\(H\)\s*x\s*(.*?)\s*\(A\)\s*\(ao vivo\)")
-        matches = teams_pattern.findall(original_message)
+        # Regex para encontrar os nomes dos times na mensagem
+        pattern = r"⚽️\s*([a-zA-Z\s\-]+)\s*\(H\)\s*x\s*([a-zA-Z\s\-]+)\s*\(A\)\s*\(ao vivo\)"
+        matches = re.findall(pattern, original_message)
         
-        if matches:
-            formatted_message = original_message
-            for home_team, away_team in matches:
-                # Codificar os nomes dos times para formar os links
-                home_team_link = f"https://www.pinnacle.com/en/search/{home_team.replace(' ', '%20')}/"
-                away_team_link = f"https://www.pinnacle.com/en/search/{away_team.replace(' ', '%20')}/"
-                
-                # Substituir os nomes dos times pelos links
-                formatted_message = formatted_message.replace(f"{home_team} (H)", f"<a href='{home_team_link}'>{home_team} (H)</a>")
-                formatted_message = formatted_message.replace(f"{away_team} (A)", f"<a href='{away_team_link}'>{away_team} (A)</a>")
+        # Para cada par de times encontrado, cria os links
+        formatted_message = original_message
+        for match in matches:
+            home_team, away_team = match
+            home_team = home_team.strip().replace(" ", "-").lower()
+            away_team = away_team.strip().replace(" ", "-").lower()
+
+            home_link = f"https://ropinweb.pinnacle888.com/en/compact/search/{home_team}"
+            away_link = f"https://ropinweb.pinnacle888.com/en/compact/search/{away_team}"
             
-            return formatted_message
-        else:
-            return original_message
+            # Substitui o texto do time original pelos links
+            formatted_message = formatted_message.replace(f"⚽️ {match[0]} (H) x {match[1]} (A) (ao vivo)", 
+                                                         f"🔗 {home_link}\n🔗 {away_link}")
+        
+        return formatted_message
 
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """
