@@ -19,7 +19,7 @@ class TelegramForwardBot:
         self.app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))
 
     async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Responde ao comando /start."""
+        """Responde ao comando /start.""" 
         chat_id = update.message.chat_id
         self.chat_ids.add(chat_id)  # Adiciona o chat_id à lista
         await update.message.reply_text(
@@ -34,18 +34,25 @@ class TelegramForwardBot:
             original_message: A mensagem original recebida pelo bot.
         
         Returns:
-            A mensagem formatada com o link.
+            A mensagem formatada com os links.
         """
-        # Usa regex para extrair o nome do campeonato
-        match = re.search(r"🏟 (.+)$", original_message, re.MULTILINE)
-        if match:
-            campeonato = match.group(1).strip().lower().replace(" ", "-")
-            # Constrói o link
-            link = f"https://black.betinasia.com/v/sportsbook/football/XE/{campeonato}?group=in+running"
-            # Retorna a mensagem original com o link adicionado
-            return f"{original_message}\n\n🔗 Acompanhe aqui: {link}"
+        # Regular expression para encontrar os nomes dos times
+        teams_pattern = re.compile(r"⚽️\s*(.*?)\s*\(H\)\s*x\s*(.*?)\s*\(A\)\s*\(ao vivo\)")
+        matches = teams_pattern.findall(original_message)
+        
+        if matches:
+            formatted_message = original_message
+            for home_team, away_team in matches:
+                # Codificar os nomes dos times para formar os links
+                home_team_link = f"https://www.pinnacle.com/en/search/{home_team.replace(' ', '%20')}/"
+                away_team_link = f"https://www.pinnacle.com/en/search/{away_team.replace(' ', '%20')}/"
+                
+                # Substituir os nomes dos times pelos links
+                formatted_message = formatted_message.replace(f"{home_team} (H)", f"<a href='{home_team_link}'>{home_team} (H)</a>")
+                formatted_message = formatted_message.replace(f"{away_team} (A)", f"<a href='{away_team_link}'>{away_team} (A)</a>")
+            
+            return formatted_message
         else:
-            # Se não encontrar o campeonato, retorna a mensagem original
             return original_message
 
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -65,7 +72,8 @@ class TelegramForwardBot:
             try:
                 await context.bot.send_message(
                     chat_id=chat_id,
-                    text=formatted_message
+                    text=formatted_message,
+                    parse_mode='HTML'  # Habilitar formatação HTML para os links
                 )
             except Exception as e:
                 await update.message.reply_text(
