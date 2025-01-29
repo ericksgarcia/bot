@@ -42,8 +42,8 @@ class TelegramForwardBot:
         # Constrói os links para cada time
         links = []
         for home_team, away_team in matches:
-            home_link = f"https://ropinweb.pinnacle888.com/en/compact/search/{home_team.replace(' ', '-')}"
-            away_link = f"https://ropinweb.pinnacle888.com/en/compact/search/{away_team.replace(' ', '-')}"
+            home_link = f"https://pinnacle888.com/en/compact/search/{home_team.replace(' ', '-')}"
+            away_link = f"https://pinnacle888.com/en/compact/search/{away_team.replace(' ', '-')}"
             links.append(f"{home_link}\n{away_link}")
         
         # Retorna a mensagem original com os links adicionados
