@@ -27,27 +27,33 @@ class TelegramForwardBot:
         )
 
     def format_message(self, original_message: str) -> str:
-        """
-        Formata a mensagem original para incluir os links desejados.
-        
-        Args:
-            original_message: A mensagem original recebida pelo bot.
-        
-        Returns:
-            A mensagem formatada com os links.
-        """
-        # Usa regex para extrair os nomes dos times
-        matches = re.findall(r"⚽️ (.+?) \(H\) x (.+?) \(A\)", original_message)
-        
-        # Constrói os links para cada time
-        links = []
+    """
+    Formata a mensagem original para incluir os links dos times.
+    
+    Args:
+        original_message: A mensagem original recebida pelo bot.
+    
+    Returns:
+        A mensagem formatada com os links dos times.
+    """
+    # Usa regex para extrair os nomes dos times
+    matches = re.findall(r"⚽️ (.+?) \(H\) x (.+?) \(A\) \(ao vivo\)", original_message)
+    
+    if matches:
+        formatted_message = original_message + "\n\n"
         for home_team, away_team in matches:
-            home_link = f"https://www.pinnacle888.com/m/en/asian/search#{home_team.replace(' ', '%20')}"
-            away_link = f"https://www.pinnacle888.com/m/en/asian/search#{away_team.replace(' ', '%20')}"
-            links.append(f"{home_link}\n{away_link}")
+            # Constrói os links para cada time
+            home_link = f"https://betwinner.com/br/search-events?searchtext={home_team.replace(' ', '+')}"
+            away_link = f"https://betwinner.com/br/search-events?searchtext={away_team.replace(' ', '+')}"
+            
+            # Adiciona os links à mensagem formatada
+            formatted_message += f"🔗 {home_team}: {home_link}\n"
+            formatted_message += f"🔗 {away_team}: {away_link}\n\n"
         
-        # Retorna a mensagem original com os links adicionados
-        return f"{original_message}\n\n🔗 Links:\n" + "\n".join(links)
+        return formatted_message.strip()
+    else:
+        # Se não encontrar os times, retorna a mensagem original
+        return original_message
 
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """
