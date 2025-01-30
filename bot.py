@@ -28,32 +28,45 @@ class TelegramForwardBot:
 
     def format_message(self, original_message: str) -> str:
     """
-    Formata a mensagem original para incluir os links dos times.
+    Formata a mensagem original para incluir links para cada time.
     
     Args:
         original_message: A mensagem original recebida pelo bot.
     
     Returns:
-        A mensagem formatada com os links dos times.
+        A mensagem formatada com os links para cada time.
     """
-    # Usa regex para extrair os nomes dos times
-    matches = re.findall(r"⚽️ (.+?) \(H\) x (.+?) \(A\) \(ao vivo\)", original_message)
+    # Lista para armazenar todas as linhas da mensagem formatada
+    formatted_lines = []
     
-    if matches:
-        formatted_message = original_message + "\n\n"
-        for home_team, away_team in matches:
-            # Constrói os links para cada time
-            home_link = f"https://betwinner.com/br/search-events?searchtext={home_team.replace(' ', '+')}"
-            away_link = f"https://betwinner.com/br/search-events?searchtext={away_team.replace(' ', '+')}"
-            
-            # Adiciona os links à mensagem formatada
-            formatted_message += f"🔗 {home_team}: {home_link}\n"
-            formatted_message += f"🔗 {away_team}: {away_link}\n\n"
-        
-        return formatted_message.strip()
-    else:
-        # Se não encontrar os times, retorna a mensagem original
-        return original_message
+    # Processa cada linha da mensagem original
+    for line in original_message.split('\n'):
+        # Procura por linhas que começam com ⚽️ e contêm times
+        if '⚽️' in line and '(H)' in line and '(A)' in line:
+            # Extrai os nomes dos times usando regex
+            match = re.search(r'⚽️\s+(.+?)\s*\(H\)\s*x\s*(.+?)\s*\(A\)', line)
+            if match:
+                home_team = match.group(1).strip()
+                away_team = match.group(2).strip()
+                
+                # Formata os nomes dos times para a URL (substitui espaços por +)
+                home_team_url = home_team.replace(' ', '+')
+                away_team_url = away_team.replace(' ', '+')
+                
+                # Adiciona a linha original
+                formatted_lines.append(line)
+                
+                # Adiciona os links para os times
+                formatted_lines.append(f"https://betwinner.com/br/search-events?searchtext={home_team_url}")
+                formatted_lines.append(f"https://betwinner.com/br/search-events?searchtext={away_team_url}")
+                formatted_lines.append("")  # Linha em branco para separar os jogos
+            else:
+                formatted_lines.append(line)
+        else:
+            formatted_lines.append(line)
+    
+    # Junta todas as linhas em uma única string
+    return '\n'.join(formatted_lines)
 
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """
